@@ -31,6 +31,7 @@ bool (__thiscall *original_create_move)(IClientMode*, float, UserCmd*);
 bool pull = false;
 float throw_time = 0.0f;
 float delay_time = 0.1f;
+bool button_swap = false;
 
 extern "C" __declspec(dllexport)
 void* CreateInterface(const char* name, InterfaceReturnStatus* rc) {
@@ -54,6 +55,16 @@ bool __fastcall create_move(IClientMode* client_mode, void*, float input_sample_
 
     if (strcmp(current_weapon->description->weapon_class, WEAPON_FLASHBANG) != 0)
         return original_create_move(client_mode, input_sample_time, cmd);
+
+    if (button_swap) {
+        if (cmd->buttons & PlayerButtons::ATTACK) {
+            cmd->buttons &= ~PlayerButtons::ATTACK;
+            cmd->buttons |= PlayerButtons::ATTACK2;
+        } else if (cmd->buttons & PlayerButtons::ATTACK2) {
+            cmd->buttons |= PlayerButtons::ATTACK;
+            cmd->buttons &= ~PlayerButtons::ATTACK2;
+        }
+    }
 
     auto tick_base_time = *offset<int>(*local_player, offsets::tick_base) * global_vars->interval_per_tick;
 
@@ -86,6 +97,7 @@ void init(create_interface_fn ef, create_interface_fn sf) {
     engine_cvar = reinterpret_cast<ICvar*>(ef(interface_version_engine_cvar, nullptr));
 
     engine_cvar->register_con_command(&macro_command);
+    engine_cvar->register_con_command(&button_swap_command);
 
     auto client_module = GetModuleHandleA("client.dll");
     auto cf = reinterpret_cast<create_interface_fn>(GetProcAddress(client_module, "CreateInterface"));
