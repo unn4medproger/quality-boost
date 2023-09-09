@@ -14,6 +14,7 @@
 #include "plugin.hpp"
 #include "offsets.hpp"
 #include "command.hpp"
+#include "weapon.hpp"
 
 class BasePlayer;
 class IClientMode;
@@ -47,6 +48,11 @@ bool __fastcall create_move(IClientMode* client_mode, void*, float input_sample_
     auto weapon = entity_list->get_client_entity_from_handle(active_weapon);
 
     if (!weapon)
+        return original_create_move(client_mode, input_sample_time, cmd);
+
+    auto current_weapon = reinterpret_cast<_Current_Weapon*>(weapon);
+
+    if (strcmp(current_weapon->description->weapon_class, WEAPON_FLASHBANG) != 0)
         return original_create_move(client_mode, input_sample_time, cmd);
 
     auto tick_base_time = *offset<int>(*local_player, offsets::tick_base) * global_vars->interval_per_tick;
