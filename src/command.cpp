@@ -23,7 +23,7 @@ void MacroCommand::dispatch(const Command& c) {
         engine_cvar->console_printf("Delay is %.3f\n", delay_time);
 }
 
-ButtonSwapCommand::MacroCommand() {
+ButtonSwapCommand::ButtonSwapCommand() {
     this->registered = false;
     this->name = "macro_swap";
     this->help_string = "Toggle attack and attack2 swap while holding flashlight";
